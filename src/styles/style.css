@@ -1,0 +1,57 @@
+:root {
+  font-family: system-ui, sans-serif;
+  color: #f5f0ff;
+  background: #171321;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  line-height: 1.6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+#app {
+  display: grid;
+  min-height: 100svh;
+  padding: clamp(1rem, 4vw, 4rem);
+  place-items: center;
+}
+
+.welcome {
+  width: 100%;
+  max-width: 44rem;
+  padding: clamp(1.5rem, 5vw, 4rem);
+  border: 1px solid #514360;
+  border-radius: 1.5rem;
+  background: #231c30;
+  overflow-wrap: anywhere;
+}
+
+.welcome__label {
+  margin-top: 0;
+  color: #cdb0f3;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 1rem 0;
+  font-family: Georgia, serif;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  line-height: 1.15;
+}
+
+.welcome__status {
+  margin: 1.75rem 0 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid #514360;
+  color: #d7cfe3;
+}
