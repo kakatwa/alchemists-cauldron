@@ -8,8 +8,8 @@ potions before time or lives run out.
 
 Story 1 is in progress. The project foundation displays a responsive welcome
 page. Gameplay is not implemented yet, so there are no game controls.
-ESLint, Prettier, Git hooks, the PR template, and deployment automation are
-planned for subsequent feature PRs.
+ESLint and Prettier are configured. Git hooks, the PR template, and deployment
+automation are planned for subsequent feature PRs.
 
 ## Task stages
 
@@ -33,16 +33,50 @@ npm run dev
 
 Open the local URL printed by Vite, including `/alchemists-cauldron/`.
 
-| Command | Purpose |
-| --- | --- |
-| `npm run dev` | Start Vite's development server with live updates. |
-| `npm run typecheck` | Check TypeScript types without generating files. |
-| `npm run build` | Check types, then bundle production files into `dist/`. |
-| `npm run preview` | Serve the production build locally after building. |
+| Command                | Purpose                                                       |
+| ---------------------- | ------------------------------------------------------------- |
+| `npm run dev`          | Start Vite's development server with live updates.            |
+| `npm run typecheck`    | Check TypeScript types without generating files.              |
+| `npm run build`        | Check types, then bundle production files into `dist/`.       |
+| `npm run preview`      | Serve the production build locally after building.            |
+| `npm run lint`         | Check code quality; errors or warnings make the command fail. |
+| `npm run format`       | Rewrite supported project files with consistent formatting.   |
+| `npm run format:check` | Check formatting without changing files.                      |
 
 Vite serves source files during development and bundles them for production.
 TypeScript catches type mistakes before the browser runs the code. Both are
 development tools; this project has no runtime library dependencies.
+
+## Code quality
+
+ESLint checks JavaScript and TypeScript using recommended rules. Explicit `any`
+and `console.log` are errors. Browser globals are available in application code;
+Node.js globals are available in tooling configuration. Generated build output
+and installed dependencies are excluded.
+
+Prettier handles formatting: two spaces, semicolons, single quotes where
+appropriate, trailing commas, an 80-character preferred line width, and LF line
+endings. `eslint-config-prettier` prevents conflicting formatting rules while
+keeping the code-quality rules enabled. Prettier skips generated builds,
+dependencies, and the npm-managed lockfile; it also respects `.gitignore`.
+
+TypeScript is pinned to 6.0.3 because typescript-eslint 8.72.0 supports TypeScript
+versions below 6.1, not the foundation's original 7.0.2. All strict compiler
+settings are retained, and Vite remains at 8.3.5. Do not use `--force` or
+`--legacy-peer-deps` to bypass compatibility checks when updating tools.
+
+Before a feature PR, run:
+
+```sh
+npm run format
+npm run typecheck
+npm run lint
+npm run format:check
+npm run build
+```
+
+Review the formatting changes before committing. These checks are currently
+manual; automated commit and push hooks will be added in the next feature group.
 
 ## Project structure
 
