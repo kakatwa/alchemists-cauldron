@@ -8,8 +8,8 @@ potions before time or lives run out.
 
 Story 1 is in progress. The project foundation displays a responsive welcome
 page. Gameplay is not implemented yet, so there are no game controls.
-ESLint and Prettier are configured. Git hooks, the PR template, and deployment
-automation are planned for subsequent feature PRs.
+ESLint, Prettier, and Husky Git hooks are configured. The PR template and
+deployment automation are planned for the delivery feature group.
 
 ## Task stages
 
@@ -33,15 +33,17 @@ npm run dev
 
 Open the local URL printed by Vite, including `/alchemists-cauldron/`.
 
-| Command                | Purpose                                                       |
-| ---------------------- | ------------------------------------------------------------- |
-| `npm run dev`          | Start Vite's development server with live updates.            |
-| `npm run typecheck`    | Check TypeScript types without generating files.              |
-| `npm run build`        | Check types, then bundle production files into `dist/`.       |
-| `npm run preview`      | Serve the production build locally after building.            |
-| `npm run lint`         | Check code quality; errors or warnings make the command fail. |
-| `npm run format`       | Rewrite supported project files with consistent formatting.   |
-| `npm run format:check` | Check formatting without changing files.                      |
+| Command                | Purpose                                                          |
+| ---------------------- | ---------------------------------------------------------------- |
+| `npm run dev`          | Start Vite's development server with live updates.               |
+| `npm run typecheck`    | Check TypeScript types without generating files.                 |
+| `npm run build`        | Check types, then bundle production files into `dist/`.          |
+| `npm run preview`      | Serve the production build locally after building.               |
+| `npm run lint`         | Check code quality; errors or warnings make the command fail.    |
+| `npm run format`       | Rewrite supported project files with consistent formatting.      |
+| `npm run format:check` | Check formatting without changing files.                         |
+| `npm run prepare`      | Install or repair Husky hooks in this Git checkout.              |
+| `npm run test:hooks`   | Test valid and invalid commit messages without creating commits. |
 
 Vite serves source files during development and bundles them for production.
 TypeScript catches type mistakes before the browser runs the code. Both are
@@ -75,8 +77,74 @@ npm run format:check
 npm run build
 ```
 
-Review the formatting changes before committing. These checks are currently
-manual; automated commit and push hooks will be added in the next feature group.
+Review formatting changes before committing. The pre-push hook runs lint and
+format checks automatically; type checking and build remain separate commands.
+
+## Git hooks
+
+Husky 9.1.7 connects Git events to our checks. In a normal Git checkout, run
+`npm ci` with development dependencies and lifecycle scripts enabled. npm runs
+`prepare` automatically, which installs Husky's wrappers and sets the local
+`core.hooksPath` to `.husky/_`. No global Husky installation is needed.
+
+The tracked `.husky/commit-msg` and `.husky/pre-push` files use portable POSIX
+shell commands for Ubuntu and Git Bash on Windows. Generated files in
+`.husky/_` are ignored and must not be edited or committed. The repository's
+`.gitattributes` keeps tracked shell files on LF line endings.
+
+### Before a commit
+
+Git passes the message file to `commit-msg`. Our Node.js validator reads it and
+blocks the commit if the header is malformed. Write a lowercase type, an optional
+scope, an optional breaking-change `!`, then a colon, one space, and a nonempty
+description. Separate an optional body or footer from the header with a blank
+line. Examples:
+
+```text
+chore: add Git hooks
+fix(storage): handle a missing save
+feat!: change the save format
+```
+
+Use present-tense imperative wording: `add hooks`, not `added hooks` or
+`adds hooks`. Grammar and whether the description accurately explains the change
+still require human review; the validator checks structure, not English grammar.
+Types such as `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `perf`, `build`,
+`ci`, `chore`, and `revert` are conventional; other lowercase types are permitted
+by the [RS School convention](https://rs.school/docs/git-convention).
+
+For our **Create a merge commit** workflow, the validator also accepts GitHub's
+specific generated header, such as
+`Merge pull request #2 from kakatwa/chore/code-quality`. It does not accept any
+arbitrary message starting with `Merge`. GitHub creates remote merge commits
+without running your local hooks; pulling those existing commits does not run
+`commit-msg` again. Use conventional headers for your own commits.
+
+### Before a push
+
+`pre-push` runs `npm run lint` and, if lint passes, `npm run format:check`. A
+failure stops the push. These checks inspect the working tree, including
+uncommitted supported files, and do not automatically rewrite or stage files.
+Fix lint errors, run `npm run format` for formatting issues, review the changes,
+commit any intended fixes, and retry the push.
+
+### Troubleshooting
+
+- If hooks do not run, check `git config --get core.hooksPath`; expect `.husky/_`.
+  Run `npm run prepare` to repair installation, then `npm run test:hooks`.
+- A downloaded ZIP is not a Git checkout. Clone the repository and run `npm ci`
+  from its root, with permission to update its Git configuration.
+- Use Node 24.x and make sure `node`, `npm`, and Git are on the terminal's PATH.
+  On Windows, install Git for Windows (which supplies the shell used by hooks).
+  If PowerShell blocks `npm.ps1`, use `npm.cmd ci` or `npm.cmd run prepare`.
+- A GUI Git client must also be able to find Node/npm. Restart it after fixing
+  PATH, or configure your version manager in `~/.config/husky/init.sh` as described
+  in the [Husky guide](https://typicode.github.io/husky/how-to.html).
+- Install development dependencies and allow npm lifecycle scripts. Do not use
+  `--no-verify`, disable Husky, or suppress lint/format rules to get past failures.
+- The message tests create and clean up temporary files outside the repository;
+  they never make commits or change branches. Git hooks are local checks, not a
+  replacement for future CI checks.
 
 ## Project structure
 
