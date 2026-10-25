@@ -24,7 +24,11 @@ and [Story 1 criteria](https://github.com/rolling-scopes-school/qualifying-stage
 
 ## Run locally
 
-Use Node.js 24.x with its bundled npm. The `.nvmrc` file records that major version.
+Use Node.js 24.22.1 or a newer 24.x release with its bundled npm. The `.nvmrc`
+file pins the reviewed security release; `.npmrc` rejects installs on unsupported
+Node versions. With nvm, run `nvm install` and `nvm use` before installing packages.
+On Windows without a version manager, install the patched Node.js 24.x release
+and restart your terminal.
 
 ```sh
 npm ci
@@ -48,6 +52,28 @@ Open the local URL printed by Vite, including `/alchemists-cauldron/`.
 Vite serves source files during development and bundles them for production.
 TypeScript catches type mistakes before the browser runs the code. Both are
 development tools; this project has no runtime library dependencies.
+
+## Security maintenance
+
+The October 25, 2026 review found no known dependency vulnerabilities with
+`npm audit`, including development dependencies. The installed Node.js 24.19.0
+was below the required security patch level. Node.js 24.22.1 fixes the October 21
+runtime vulnerabilities, including the Brotli decoder issue CVE-2026-111497;
+see the [official release notes](https://nodejs.org/en/blog/release/v24.22.1).
+Changing the project version requirement does not upgrade an installed runtime:
+verify `node --version` after installing the update.
+
+This repository contains a static browser application, with no PHP backend or
+production Node.js server. Publish only the generated `dist/` files. Keep Vite's
+development and preview servers local; they are not production hosting servers.
+The review covers this repository and the active local Node.js version, not a
+deployed host, other applications, or evidence of a machine compromise.
+
+Run `npm audit` regularly and after dependency changes. An audit checks known npm
+advisories, not Node.js runtime vulnerabilities or every possible security issue.
+Keep Node.js patched and update the version floor and `.nvmrc` when reviewing
+future security releases. Retain the lockfile and use `npm ci` for reproducible
+installs.
 
 ## Code quality
 
